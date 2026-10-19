@@ -26,6 +26,11 @@ Projeto desenvolvido como prática da disciplina de Laboratório de Desenvolvime
 CRUD_FULLSTACK/
 ├── .env.example              # Modelo de configuração de variáveis de ambiente
 ├── .gitignore                # Proteção contra envio de node_modules, dist e .env
+├── .dockerignore             # Arquivos ignorados no contexto do Docker
+├── Dockerfile                # Build multi-stage da aplicação Node.js + Frontend
+├── docker-compose.yml        # Orquestração dos serviços (App + MySQL)
+├── docker-iniciar.bat        # Inicialização em 1 clique no Windows
+├── docker-parar.bat          # Parada dos containers no Windows
 ├── banco.sql                 # Script DDL de criação do banco e tabela alunos
 ├── package.json              # Metadados e scripts npm do projeto
 ├── tsconfig.json             # Configuração TypeScript do backend
@@ -50,7 +55,41 @@ CRUD_FULLSTACK/
 
 ---
 
-## ⚙️ Como Executar o Projeto Localmente
+## 🐳 Como Executar com Docker (Recomendado)
+
+Tudo roda automaticamente em containers isolados: banco de dados MySQL 8.0 configurado e a aplicação web compilada.
+
+### Opção 1: Via Script em 1 Clique (Windows)
+Dê um duplo clique no arquivo [`docker-iniciar.bat`](./docker-iniciar.bat). Ele compila, sobe os containers e abre o navegador automaticamente!
+Para parar, execute [`docker-parar.bat`](./docker-parar.bat).
+
+### Opção 2: Via Comandos do Terminal
+```bash
+# Iniciar a aplicação e o MySQL em segundo plano
+docker compose up --build -d
+
+# Visualizar logs em tempo real
+docker compose logs -f
+
+# Parar os containers
+docker compose down
+```
+
+Ou usando os atalhos npm:
+```bash
+npm run docker:up     # Sobe os containers
+npm run docker:logs   # Acompanha logs
+npm run docker:down   # Para os containers
+```
+
+Acesse:
+- **Aplicação Web:** `http://localhost:3000`
+- **Healthcheck:** `http://localhost:3000/api/health`
+- **MySQL no Host (se desejar conectar via Workbench/DBeaver):** `localhost:3307` (Usuário: `root` | Senha: `root`)
+
+---
+
+## ⚙️ Como Executar Localmente (Sem Docker)
 
 ### 1. Clonar o repositório
 ```bash

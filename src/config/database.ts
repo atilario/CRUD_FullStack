@@ -21,13 +21,20 @@ export const pool = createPool({
 });
 
 // async retorna uma Promise; await aguarda o teste terminar.
-// execute usa uma consulta simples e o pool libera a conexão.
-export async function testConnection(): Promise<void> {
-  try {
-    await pool.execute('SELECT 1');
-    console.log('Conexão com MySQL estabelecida.');
-  } catch (erro) {
-    console.error('Falha ao conectar ao MySQL:', erro);
-    throw erro; // O servidor não deve anunciar funcionamento sem banco.
+// Possui tentativas com intervalo para aguardar o MySQL inicializar em ambientes como Docker.
+export async function testConnection(retries = 5, delayMs = 2000): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await pool.execute('SELECT 1');
+      console.log('Conexão com MySQL estabelecida.');
+      return;
+    } catch (erro) {
+      if (attempt === retries) {
+        console.error('Falha ao conectar ao MySQL após tentativas:', erro);
+        throw erro; // O servidor não deve anunciar funcionamento sem banco.
+      }
+      console.warn(`Tentativa ${attempt}/${retries}: aguardando MySQL responder...`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
   }
 }

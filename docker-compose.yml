@@ -1,0 +1,48 @@
+services:
+  # Serviço do Banco de Dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: crud_mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-aula_mysql}
+    ports:
+      # Mapeia a porta 3307 no host para a 3306 do container.
+      # Isso evita conflito se você já tiver o MySQL do Windows rodando na porta 3306.
+      - "${DB_HOST_PORT:-3307}:3306"
+    volumes:
+      # Persistência dos dados do banco
+      - mysql_data:/var/lib/mysql
+      # Script DDL executado automaticamente na primeira inicialização
+      - ./banco.sql:/docker-entrypoint-initdb.d/01-banco.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # Serviço da Aplicação Web Fullstack (Node.js + Express + Frontend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crud_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-3000}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      DB_NAME: ${DB_NAME:-aula_mysql}
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

@@ -3,5 +3,9 @@ dist/
 .env
 configurar-mysql.bat
 reset.sql
+apresentacao.html
+public/slides.html
+
+
 
 
